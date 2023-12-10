@@ -4,9 +4,11 @@ const User = require('../models/User');
 const { body, validationResult } = require("express-validator")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = "mak";
+require('dotenv').config();
+const JWT_SECRET = process.env.JWT_SECRET_SIGN;
 
-// Create a User using POST method on "/api/auth/createuser". NO login 
+// ENDPOINT NO: 1
+// Create a User using POST method on "/api/auth/createuser" (NO login required)
 router.post("/createuser", [
     // Validating fields for creating a user
     body('name', "Name must be atleast 3 characters long").isLength({ min: 3 }),
@@ -45,10 +47,53 @@ router.post("/createuser", [
         // Send that Authentication Token
         res.json({ JWT_AuthToken })
     } catch (err) {
-        console.err(err.message)
+        console.log(err.message)
         // Send status "500" if anything went wrong
         res.status(500).send("Something went wrong :(")
     }
+})
+
+// ENDPOINT NO: 2
+// Authenticate a User using POST method on "/api/auth/login" (login required)
+router.post("/login", [
+    // Validating fields for creating a user
+    body('email', "Enter a valid Email address").isEmail(),
+    body('password', "Password cannot be blank.").exists(),
+], async (req, res) => {
+    // Return errors and status "400" (If any)
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
+
+    const {email, password} = req.body;
+    try{
+        let user = await User.findOne({email});
+        if (!user) {
+            return res.status(400).json({error: "Email or Password incoorect. Please login with correct credentials."});
+        }
+
+        const passwordCompare = await bcrypt.compare(password, user.password);
+        if(!passwordCompare){
+            return res.status(400).json({error: "Email or Password incoorect. Please login with correct credentials."});
+        }
+
+        const payload = {
+            user:{
+                id: user.id
+            }
+        }
+
+        const JWT_AuthToken = jwt.sign(payload, JWT_SECRET);
+        // Send that Authentication Token
+        res.json({ JWT_AuthToken })
+
+    } catch(err){
+        console.log(err.message)
+        // Send status "500" if anything went wrong
+        res.status(500).send("Something went wrong :(")
+    }
+
 })
 
 module.exports = router;
