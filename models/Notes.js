@@ -20,4 +20,5 @@ const NotesSchema = new Schema({
     },
 });
 
-module.exports = mongoose.model('user', NotesSchema);
+// Created a Notes Schema with necessary data fields & exported it as "notes"
+module.exports = mongoose.model('notes', NotesSchema);
