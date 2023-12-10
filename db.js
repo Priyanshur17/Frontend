@@ -8,7 +8,7 @@ const connectToMongo = async () => {
     }).then(() => {
         console.log("Connection is successfull :)");
     }).catch((e) => {
-        console.log("NOT Connected :( Error: " + e);
+        console.log("NOT Connected :( " + e);
     });
 }
 
