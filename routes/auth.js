@@ -49,7 +49,7 @@ router.post("/createuser", [
         res.json({ JWT_AuthToken })
     } catch (err) {
         console.log(err.message)
-        // Send status "500" if anything went wrong
+        // Send status "500" (Internal Server Error) if anything went wrong
         res.status(500).send("Something went wrong :( (Internal Server Error)")
     }
 })
