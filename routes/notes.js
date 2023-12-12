@@ -51,24 +51,51 @@ router.post("/addnote", fetchUser, [
 router.put("/updatenote/:id", fetchUser, async (req, res) => {
     const { title, description, tag } = req.body;
     // Create a newNote object which will add edited components of a note
-    const newNote = {};
-    // If there is "title" in request body, then replace it with old title
-    if (title) { newNote.title = title };
-    // Same method for others
-    if (description) { newNote.description = description };
-    if (tag) { newNote.tag = tag };
-    // Find the note to be updated
-    let note = await Notes.findById(req.params.id);
-    // If note doesnot exsists send status "404"
-    if (!note) { return res.status(404).send("Not Found") };
-    // If the note does not belong to that user send status "401"
-    if (note.user.toString() !== req.user.id) {
-        return res.status(401).send("Unauthorized access")
+    try {
+        const newNote = {};
+        // If there is "title" in request body, then replace it with old title
+        if (title) { newNote.title = title };
+        // Same method for others
+        if (description) { newNote.description = description };
+        if (tag) { newNote.tag = tag };
+        // Find the note to be updated
+        let note = await Notes.findById(req.params.id);
+        // If note doesnot exsists send status "404"
+        if (!note) { return res.status(404).send("Not Found") };
+        // If the note does not belong to that user send status "401"
+        if (note.user.toString() !== req.user.id) {
+            return res.status(401).send("Unauthorized access")
+        }
+        // Use method of find & update, send user id (given in parameter), "newNote" object to set in place and set the value of new = true. 
+        note = await Notes.findByIdAndUpdate(req.params.id, { $set: newNote }, { new: true });
+        // Send that response of updated note
+        res.json({ note });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error updating the note (Internal Server Error)");
     }
-    // Use method of find & update, send user id (given in parameter), "newNote" object to set in place and set the value of new = true. 
-    note = await Notes.findByIdAndUpdate(req.params.id, { $set: newNote }, { new: true });
-    // Send that response of updated note
-    res.json(note);
+})
+
+// ROUTE ENDPOINT NO: 4
+// Delete an exsisting Note using DELETE method on "/api/notes/deletenote" (Login required)
+router.delete("/deletenote/:id", fetchUser, async (req, res) => {
+    try {
+        // Find the note to be deleted
+        let note = await Notes.findById(req.params.id);
+        // If note doesnot exsists send status "404"
+        if (!note) { return res.status(404).send("Not Found") };
+        // If the note does not belong to that user send status "401"
+        if (note.user.toString() !== req.user.id) {
+            return res.status(401).send("Unauthorized access")
+        }
+        // Use method of find & delete, send user id (given in parameter), "newNote" object to set in place and set the value of new = true. 
+        note = await Notes.findByIdAndDelete(req.params.id);
+        // Send that response of updated note
+        res.json({ "Success": "Note has been deleted successfully", note: note });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error deleting the note (Internal Server Error)");
+    }
 })
 
 module.exports = router;
