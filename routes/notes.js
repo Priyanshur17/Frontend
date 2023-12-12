@@ -46,4 +46,29 @@ router.post("/addnote", fetchUser, [
     }
 })
 
+// ROUTE ENDPOINT NO: 3
+// Update an exsisting Note using PUT method on "/api/notes/updatenote" (Login required)
+router.put("/updatenote/:id", fetchUser, async (req, res) => {
+    const { title, description, tag } = req.body;
+    // Create a newNote object which will add edited components of a note
+    const newNote = {};
+    // If there is "title" in request body, then replace it with old title
+    if (title) { newNote.title = title };
+    // Same method for others
+    if (description) { newNote.description = description };
+    if (tag) { newNote.tag = tag };
+    // Find the note to be updated
+    let note = await Notes.findById(req.params.id);
+    // If note doesnot exsists send status "404"
+    if (!note) { return res.status(404).send("Not Found") };
+    // If the note does not belong to that user send status "401"
+    if (note.user.toString() !== req.user.id) {
+        return res.status(401).send("Unauthorized access")
+    }
+    // Use method of find & update, send user id (given in parameter), "newNote" object to set in place and set the value of new = true. 
+    note = await Notes.findByIdAndUpdate(req.params.id, { $set: newNote }, { new: true });
+    // Send that response of updated note
+    res.json(note);
+})
+
 module.exports = router;
