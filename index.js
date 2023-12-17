@@ -1,10 +1,12 @@
 const connectToMongo = require('./db');
-const express = require("express")
+const express = require("express");
+const cors = require("cors");
 
-connectToMongo();
+connectToMongo();   // Function imported from "db" to connect to MongoDB
 const app = express();
 const port = 8000;      // Active port number
 
+app.use(cors());
 app.use(express.json());
 
 // Home page status and message

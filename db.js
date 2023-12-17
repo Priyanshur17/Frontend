@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 require('dotenv').config();
 
+// MongoDB connection string
 const mongoURI = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@inotebookdb.lul0odf.mongodb.net/inotebookdb`
 
 const connectToMongo = async () => {
@@ -10,6 +11,6 @@ const connectToMongo = async () => {
     }).catch((e) => {
         console.log("NOT Connected :( " + e);
     });
-}
+} 
 
 module.exports = connectToMongo;
