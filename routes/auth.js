@@ -16,17 +16,18 @@ router.post("/createuser", [
     body('email', "Enter a valid Email address").isEmail(),
     body('password', "Password must be atleast 6 characters long.").isLength({ min: 6 }),
 ], async (req, res) => {
+    let success = false;
     // Return errors and status "400" (If any)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() })
+        return res.status(400).json({ success, errors: errors.array() })
     }
     // Validate the user with same email exists
     try {
         let user = await User.findOne({ email: req.body.email });
         // If user already exsists with same email, send status "400" & error message
         if (user) {
-            return res.status(400).json({ error: "This Email address is already registered with a user" })
+            return res.status(400).json({ success, error: "This Email address is already registered with a user" })
         }
         // Adding salt & hashing in user password
         const salt = await bcrypt.genSalt(10);
@@ -45,8 +46,9 @@ router.post("/createuser", [
         }
         // Create a Authentication token from that data & give it secret key/signature
         const JWT_AuthToken = jwt.sign(data, JWT_SECRET);
+        success = true;
         // Send that Authentication Token
-        res.json({ JWT_AuthToken })
+        res.json({ success, JWT_AuthToken })
     } catch (err) {
         console.log(err.message)
         // Send status "500" (Internal Server Error) if anything went wrong
@@ -61,10 +63,11 @@ router.post("/login", [
     body('email', "Enter a valid Email address").isEmail(),
     body('password', "Password cannot be blank.").exists(),
 ], async (req, res) => {
+    let success = false;
     // Return errors and status "400" (If any)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() })
+        return res.status(400).json({ success, errors: errors.array() })
     }
     // Sent "email" & "password" to request body
     const { email, password } = req.body;
@@ -73,12 +76,12 @@ router.post("/login", [
         // Find the user by it's email
         let user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ error: "Email or Password incoorect. Please login with correct credentials." });
+            return res.status(400).json({ success, error: "Email or Password incoorect. Please login with correct credentials." });
         }
         // Compare the passwords; the one which is entered and the one which is saved in DB
         const passwordCompare = await bcrypt.compare(password, user.password);
         if (!passwordCompare) {
-            return res.status(400).json({ error: "Email or Password incoorect. Please login with correct credentials." });
+            return res.status(400).json({ success, error: "Email or Password incoorect. Please login with correct credentials." });
         }
         // Send the payload data to that user
         const payload = {
@@ -88,9 +91,9 @@ router.post("/login", [
         }
         // Same Authentication token from above & give it secret key/signature
         const JWT_AuthToken = jwt.sign(payload, JWT_SECRET);
+        success = true;
         // Send that Authentication Token
-        res.json({ JWT_AuthToken })
-
+        res.json({ success, JWT_AuthToken })
     } catch (err) {
         console.log(err.message)
         // Send status "500" if anything went wrong
@@ -102,10 +105,11 @@ router.post("/login", [
 // Get loggedin User details using POST method on "/api/auth/getuser" (login required)
 router.post("/getuser", fetchUser, async (req, res) => {
     try {
+        let success = true;
         var userId = req.user.id;
         // Find the user by it's ID (sent prev) and unselect the "password" from it & send the response.
         const user = await User.findById(userId).select("-password");
-        res.send(user);
+        res.send({success, user});
     } catch (err) {
         console.log(err.message)
         // Send status "500" if anything went wrong
