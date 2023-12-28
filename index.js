@@ -4,7 +4,7 @@ const cors = require("cors");
 
 connectToMongo();   // Function imported from "db" to connect to MongoDB
 const app = express();
-const port = 8000;      // Active port number
+const port = 8000 || process.env.REACT_APP_HOST_URL;      // Active port number
 
 app.use(cors());
 app.use(express.json());
