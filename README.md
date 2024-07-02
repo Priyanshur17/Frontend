@@ -36,7 +36,7 @@ This repository contains the code for backend of iNotebook app using MERN stack 
 To get started with Backend project, follow these steps:
 
 1. Clone the repository:
-
+(front end at) ```https://github.com/Priyanshur17/MERN-Notebook-app-.git ```
 2. Create a .env file in your project root directory
 
 3. Initialize 3 env variables, named as:
